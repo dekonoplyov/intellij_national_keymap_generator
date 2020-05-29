@@ -2,6 +2,7 @@ import argparse
 import json
 from typing import Dict
 from xml.etree import ElementTree
+import os
 
 
 def get_keymap(path_to_file: str) -> ElementTree:
@@ -12,7 +13,7 @@ def get_keymap(path_to_file: str) -> ElementTree:
 class Replacement:
     def __init__(self, replacement: str, add_modifiers: str):
         self.replacement = replacement
-        self.add_modifiers = add_modifiers.lower() # modifiers should be in lower
+        self.add_modifiers = add_modifiers.lower()  # modifiers should be in lower
 
 
 def get_replacements(path_to_file: str) -> Dict[str, Replacement]:
@@ -35,7 +36,7 @@ def update_keymap(keymap: ElementTree, replacements: Dict[str, Replacement]):
         for shortcut in action:
             if shortcut.tag != "keyboard-shortcut":
                 continue
-            
+
             should_update = get_first_key(shortcut) in replacements
             if has_second_keystroke(shortcut):
                 should_update = should_update or (get_second_key(shortcut) in replacements)
@@ -43,7 +44,7 @@ def update_keymap(keymap: ElementTree, replacements: Dict[str, Replacement]):
             if should_update:
                 updated_shortcuts_cnt += 1
                 update(shortcut, replacements)
-    
+
     print(updated_shortcuts_cnt, "shortcuts were updated")
 
 
@@ -66,7 +67,7 @@ def update_shortcut(shortcut: str, replacement: Replacement) -> str:
     'meta control 1'
     """
     tokens = shortcut.split()
-    tokens.pop() # remove key
+    tokens.pop()  # remove key
     tokens = set(tokens)
 
     add_mods = replacement.add_modifiers.split(" ")
@@ -80,7 +81,7 @@ def update_shortcut(shortcut: str, replacement: Replacement) -> str:
     for mod in mods:
         if mod in tokens:
             result.append(mod)
-    
+
     result.append(replacement.replacement)
 
     return " ".join(result)
@@ -100,22 +101,51 @@ def get_second_key(shortcut: ElementTree.Element) -> str:
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-k", "--keymap", type=str, required=True,
-                        help="path to keymap to process")
+    input_group = parser.add_mutually_exclusive_group(required=True)
+    input_group.add_argument("-k", "--keymap", type=str,
+                             help="path to keymap to process")
+    input_group.add_argument("-d", "--directory", type=str,
+                             help="path to directory with keymaps")
+
     parser.add_argument("-r", "--replacements", type=str, required=True,
                         help="path to replacements config")
+
     parser.add_argument("-o", "--output", type=str, required=True,
-                        help="path to output file")
+                        help="path to output file or dir")
     return parser.parse_args()
+
+
+def verify_and_create_output_dir(output: str):
+    if not os.path.exists(output):
+        print("creating output dir:", output)
+        os.mkdir(output)
+    if not os.path.isdir(output):
+        raise RuntimeError("output should be dir path when processing whole dir")
+
+
+def process_keymap(keymap: str, replacements: str, output: str):
+    keymap = get_keymap(keymap)
+    replacements = get_replacements(replacements)
+    update_keymap(keymap, replacements)
+    print("writing updated keymap to:", output)
+    keymap.write(output)
 
 
 def main():
     args = parse_arguments()
-    keymap = get_keymap(args.keymap)
-    replacements = get_replacements(args.replacements)
-    update_keymap(keymap, replacements)
-    print("writing updated keymap to:", args.output)
-    keymap.write(args.output)
+    if args.keymap is not None:
+        process_keymap(args.keymap, args.replacements, args.output)
+    else:
+        print("start processing directory:", args.directory)
+        verify_and_create_output_dir(args.output)
+        for keymap in os.listdir(args.directory):
+            if not keymap.endswith(".xml"):
+                continue
+
+            keymap_path = os.path.join(args.directory, keymap)
+            output = os.path.join(args.output, keymap)
+            process_keymap(keymap_path, args.replacements, output)
+
 
 if __name__ == "__main__":
-     main()
+    main()

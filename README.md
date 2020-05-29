@@ -4,8 +4,11 @@
 python3 keymaps.py -k path/to/keymap.xml -r config/mac_german.json -o output.xml
 ```
 
-### Options  
--k, --keymap path to keymap to process  
+### Options
+Use one of these to specify input  
+-d, --directory path to dir with keymaps  
+-k, --keymap path to keymap to process 
+ 
 -r, --replacements path to replacements config  
 -o, --output path to output file  
 

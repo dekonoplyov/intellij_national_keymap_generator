@@ -10,7 +10,7 @@ Use one of these to specify input
 -k, --keymap path to keymap to process 
  
 -r, --replacements path to replacements config  
--o, --output path to output file  
+-o, --output path to file when working with one keymap or to directory when working with whoel dir
 
 ### Config structure
 Json list with replacement dict:  

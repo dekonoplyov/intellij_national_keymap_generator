@@ -1,0 +1,9 @@
+[
+    {"key": "SEMICOLON", "add_modifiers": "shift", "replacement": "COMMA"},
+    {"key": "EQUALS", "add_modifiers": "shift", "replacement": "0"},
+    {"key": "SLASH", "add_modifiers": "shift", "replacement": "7"},
+    {"key": "OPEN_BRACKET", "add_modifiers": "alt", "replacement": "5"},
+    {"key": "BACK_SLASH", "add_modifiers": "shift alt", "replacement": "7"},
+    {"key": "CLOSE_BRACKET", "add_modifiers": "alt", "replacement": "6"},
+    {"key": "VK_QUOTE", "add_modifiers": "shift", "replacement": "NUMBER_SIGN"}
+]
